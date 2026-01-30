@@ -3,21 +3,28 @@ import Message from "./Message";
 
 const BACKEND_URL = "http://localhost:8080/api/chat";
 
-export default function ChatWindow({ chat, onUpdateMessages }) {
+export default function ChatWindow({ chat, chatId, onUpdateMessages }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat?.messages, loading]);
+
+  useEffect(() => {
+    if (chat && !loading) {
+      inputRef.current?.focus();
+    }
+  }, [chat, loading]);
 
   const sendMessage = async () => {
     if (!input.trim() || !chat || loading) return;
 
     const userMsg = { role: "user", text: input };
     const updatedMessages = [...chat.messages, userMsg];
-    onUpdateMessages(updatedMessages);
+    onUpdateMessages(chatId, updatedMessages);
     setInput("");
     setLoading(true);
 
@@ -30,12 +37,12 @@ export default function ChatWindow({ chat, onUpdateMessages }) {
 
       const data = await res.json();
 
-      onUpdateMessages([
+      onUpdateMessages(chatId, [
         ...updatedMessages,
         { role: "assistant", text: data.reply }
       ]);
     } catch {
-      onUpdateMessages([
+      onUpdateMessages(chatId, [
         ...updatedMessages,
         {
           role: "assistant",
@@ -44,6 +51,7 @@ export default function ChatWindow({ chat, onUpdateMessages }) {
       ]);
     } finally {
       setLoading(false);
+      inputRef.current?.focus();
     }
   };
 
@@ -83,14 +91,16 @@ export default function ChatWindow({ chat, onUpdateMessages }) {
       {/* INPUT BAR (ALWAYS VISIBLE) */}
       <footer className="chat-input">
         <input
+          ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder="Send a message…"
+          placeholder={chat ? "Type your message here…" : "Click 'New Chat' to start"}
           onKeyDown={e => e.key === "Enter" && sendMessage()}
           disabled={!chat || loading}
+          type="text"
         />
-        <button onClick={sendMessage} disabled={!chat || loading}>
-          ➤
+        <button onClick={sendMessage} disabled={!chat || loading} title="Send message (or press Enter)">
+          Send
         </button>
       </footer>
     </div>

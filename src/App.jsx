@@ -74,9 +74,8 @@ export default function App() {
 
       <ChatWindow
         chat={activeChat}
-        onUpdateMessages={msgs =>
-          activeChat && updateMessages(activeChatId, msgs)
-        }
+        chatId={activeChatId}
+        onUpdateMessages={(chatId, msgs) => updateMessages(chatId, msgs)}
       />
     </div>
   );
