@@ -7,17 +7,42 @@ export default function App() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
 
-  // Load from localStorage
+  // Load from Backend
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("prakruti-chats")) || [];
-    setChats(saved);
-    if (saved.length > 0) setActiveChatId(saved[0].id);
+    fetch("http://localhost:8080/api/chat/sessions")
+      .then(res => res.json())
+      .then(sessionIds => {
+        const mapped = sessionIds.map(id => ({
+          id,
+          title: "Prakruti Assessment",
+          messages: []
+        }));
+        setChats(mapped);
+        if (mapped.length > 0) setActiveChatId(mapped[0].id);
+      });
   }, []);
 
-  // Save to localStorage
   useEffect(() => {
-    localStorage.setItem("prakruti-chats", JSON.stringify(chats));
-  }, [chats]);
+    if (!activeChatId) return;
+
+    fetch(`http://localhost:8080/api/chat/sessions/${activeChatId}`)
+      .then(res => res.json())
+      .then(messages => {
+        setChats(prev =>
+          prev.map(c =>
+            c.id === activeChatId
+              ? {
+                ...c,
+                messages: messages.map(m => ({
+                  role: m.role.toLowerCase(),
+                  text: m.message
+                }))
+              }
+              : c
+          )
+        );
+      });
+  }, [activeChatId]);
 
   const startNewChat = () => {
     const newChat = {
@@ -35,12 +60,12 @@ export default function App() {
       prev.map(c =>
         c.id === chatId
           ? {
-              ...c,
-              messages,
-              title:
-                messages.find(m => m.role === "user")?.text?.slice(0, 25) ||
-                "Prakruti Assessment"
-            }
+            ...c,
+            messages,
+            title:
+              messages.find(m => m.role === "user")?.text?.slice(0, 25) ||
+              "Prakruti Assessment"
+          }
           : c
       )
     );
@@ -73,6 +98,7 @@ export default function App() {
       />
 
       <ChatWindow
+        key={activeChatId}
         chat={activeChat}
         chatId={activeChatId}
         onUpdateMessages={(chatId, msgs) => updateMessages(chatId, msgs)}

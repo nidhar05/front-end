@@ -32,8 +32,12 @@ export default function ChatWindow({ chat, chatId, onUpdateMessages }) {
       const res = await fetch(BACKEND_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg.text })
+        body: JSON.stringify({
+          sessionId: chatId,   // 🔑 THIS IS THE KEY FIX
+          message: userMsg.text
+        })
       });
+
 
       const data = await res.json();
 
