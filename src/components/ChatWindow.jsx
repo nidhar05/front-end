@@ -4,8 +4,7 @@ import Message from "./Message";
 // const BACKEND_URL =
 //   `${import.meta.env.VITE_API_URL}/api/chat` || "http://localhost:8080/api/chat";
 
-const API_BASE =
-  import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const BACKEND_URL = `${API_BASE}/api/chat`;
 
