@@ -275,3 +275,61 @@ html, body {
     width: 100%;
   }
 }
+
+/* Sidebar must allow floating menu */
+.sidebar {
+  position: relative;
+  overflow: visible;
+}
+
+/* Scroll list */
+.sidebar-section {
+  overflow-y: auto;
+}
+
+/* Chat row */
+.chat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Dots */
+.three-dots {
+  cursor: pointer;
+  padding: 0 6px;
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+.three-dots:hover {
+  opacity: 1;
+}
+
+/* FLOATING MENU (CHATGPT STYLE) */
+.chat-menu.floating {
+  position: fixed;        /* 🔑 key difference */
+  left: 220px;            /* right of sidebar */
+  background: #2a2b32;
+  border-radius: 8px;
+  min-width: 130px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+  z-index: 9999;
+  padding: 6px 0;
+}
+
+.chat-menu.floating div {
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.chat-menu.floating div:hover {
+  background: #3a3b42;
+}
+
+.chat-menu.floating .delete {
+  color: #ff6b6b;
+}
+

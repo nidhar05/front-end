@@ -1,10 +1,16 @@
+import { useState, useRef } from "react";
+
 export default function Sidebar({
   chats,
   activeChatId,
   onNewChat,
   onSelectChat,
-  onDeleteChat
+  onDeleteChat,
+  onRenameChat
 }) {
+  const [menu, setMenu] = useState(null); 
+  // menu = { chatId, top }
+
   return (
     <div className="sidebar">
       <h2>🧘 Prakruti AI</h2>
@@ -16,10 +22,6 @@ export default function Sidebar({
       <div className="sidebar-section">
         <p className="section-title">Chats</p>
 
-        {chats.length === 0 && (
-          <p className="chat-placeholder">No history yet</p>
-        )}
-
         {chats.map(chat => (
           <div
             key={chat.id}
@@ -27,7 +29,6 @@ export default function Sidebar({
               chat.id === activeChatId ? "active" : ""
             }`}
           >
-            {/* Chat title */}
             <span
               className="chat-title"
               onClick={() => onSelectChat(chat.id)}
@@ -35,20 +36,47 @@ export default function Sidebar({
               {chat.title}
             </span>
 
-            {/* Delete button */}
             <span
-              className="delete-chat"
+              className="three-dots"
               onClick={(e) => {
-                e.stopPropagation();
-                onDeleteChat(chat.id);
+                const rect = e.currentTarget.getBoundingClientRect();
+                setMenu({
+                  chatId: chat.id,
+                  top: rect.top
+                });
               }}
-              title="Delete chat"
             >
-              🗑️
+              ⋮
             </span>
           </div>
         ))}
       </div>
+
+      {/* FLOATING MENU (OUTSIDE SCROLL AREA) */}
+      {menu && (
+        <div
+          className="chat-menu floating"
+          style={{ top: menu.top }}
+        >
+          <div
+            onClick={() => {
+              onRenameChat(menu.chatId);
+              setMenu(null);
+            }}
+          >
+            Rename
+          </div>
+          <div
+            className="delete"
+            onClick={() => {
+              onDeleteChat(menu.chatId);
+              setMenu(null);
+            }}
+          >
+            Delete
+          </div>
+        </div>
+      )}
     </div>
   );
 }
