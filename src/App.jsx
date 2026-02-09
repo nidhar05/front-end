@@ -77,6 +77,26 @@ export default function App() {
     );
   };
 
+  // SELECTED CHAT
+  const selectChat = async (chatId) => {
+    setActiveChatId(chatId);
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/chat/sessions/${chatId}`
+      );
+      const messages = await res.json();
+
+      setChats(prev =>
+        prev.map(c =>
+          c.id === chatId ? { ...c, messages } : c
+        )
+      );
+    } catch (e) {
+      console.error("Failed to load chat", e);
+    }
+  };
+
   // 🗑️ DELETE CHAT
   const deleteChat = (chatId) => {
     setChats(prev => {
@@ -99,7 +119,7 @@ export default function App() {
         chats={chats}
         activeChatId={activeChatId}
         onNewChat={startNewChat}
-        onSelectChat={setActiveChatId}
+        onSelectChat={selectChat}
         onDeleteChat={deleteChat}
       />
 
