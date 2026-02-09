@@ -3,13 +3,16 @@ import Sidebar from "./components/Sidebar";
 import ChatWindow from "./components/ChatWindow";
 import "./App.css";
 
+const BACKEND_BASE_URL =
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+
 export default function App() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
 
   // Load from Backend
   useEffect(() => {
-    fetch("http://localhost:8080/api/chat/sessions")
+    fetch(`${BACKEND_BASE_URL}/api/chat/sessions`)
       .then(res => res.json())
       .then(sessionIds => {
         const mapped = sessionIds.map(id => ({

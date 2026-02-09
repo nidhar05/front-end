@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Message from "./Message";
 
-const BACKEND_URL = "https://prakruti-backend.onrender.com/api/chat";
-
-  // import.meta.env.VITE_BACKEND_URL || "http://localhost:8080/api/chat";
+const BACKEND_URL =
+  `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8080"}/api/chat`;
 
 export default function ChatWindow({ chat, chatId, onUpdateMessages }) {
   const [input, setInput] = useState("");
