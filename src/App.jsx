@@ -3,19 +3,15 @@ import Sidebar from "./components/Sidebar";
 import ChatWindow from "./components/ChatWindow";
 import "./App.css";
 
-const API_BASE =
-  import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 export default function App() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
 
-  // Load from Backend
+  // Load sessions
   useEffect(() => {
-    // fetch(`${import.meta.env.VITE_API_URL}/api/chat/sessions` || "http://localhost:8080/api/chat/sessions")
-
-
     fetch(`${API_BASE}/api/chat/sessions`)
-
       .then(res => res.json())
       .then(sessionIds => {
         const mapped = sessionIds.map(id => ({
@@ -25,13 +21,15 @@ export default function App() {
         }));
         setChats(mapped);
         if (mapped.length > 0) setActiveChatId(mapped[0].id);
-      });
+      })
+      .catch(console.error);
   }, []);
 
+  // Load messages when chat selected
   useEffect(() => {
     if (!activeChatId) return;
 
-    fetch(`${import.meta.env.VITE_API_URL}/api/chat/sessions/${activeChatId}`)
+    fetch(`${API_BASE}/api/chat/sessions/${activeChatId}`)
       .then(res => res.json())
       .then(messages => {
         setChats(prev =>
@@ -47,20 +45,22 @@ export default function App() {
               : c
           )
         );
-      });
+      })
+      .catch(console.error);
   }, [activeChatId]);
 
+  // New chat
   const startNewChat = () => {
     const newChat = {
-      id: Date.now(),
+      id: Date.now().toString(),
       title: "New Prakruti Assessment",
-      messages: [],
-      createdAt: new Date().toISOString()
+      messages: []
     };
     setChats(prev => [newChat, ...prev]);
     setActiveChatId(newChat.id);
   };
 
+  // Update messages
   const updateMessages = (chatId, messages) => {
     setChats(prev =>
       prev.map(c =>
@@ -77,39 +77,37 @@ export default function App() {
     );
   };
 
-  // SELECTED CHAT
-  const selectChat = async (chatId) => {
+  // Select chat
+  const selectChat = (chatId) => {
     setActiveChatId(chatId);
+  };
 
+  // 🗑️ DELETE CHAT (FIXED)
+  const handleDeleteChat = async (sessionId) => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/chat/sessions/${chatId}`
+        `${API_BASE}/api/chat/sessions/${sessionId}`,
+        { method: "DELETE" }
       );
-      const messages = await res.json();
 
-      setChats(prev =>
-        prev.map(c =>
-          c.id === chatId ? { ...c, messages } : c
-        )
-      );
-    } catch (e) {
-      console.error("Failed to load chat", e);
+      if (!res.ok) {
+        throw new Error("Delete failed");
+      }
+
+      // ✅ update UI ONLY after backend delete
+      setChats(prev => prev.filter(c => c.id !== sessionId));
+
+      if (activeChatId === sessionId) {
+        setActiveChatId(null);
+      }
+
+    } catch (err) {
+      console.error("Failed to delete chat", err);
+      alert("Delete failed on server");
     }
   };
 
-  // 🗑️ DELETE CHAT
-  const deleteChat = (chatId) => {
-    setChats(prev => {
-      const updated = prev.filter(c => c.id !== chatId);
 
-      // If deleted chat was active
-      if (chatId === activeChatId) {
-        setActiveChatId(updated.length > 0 ? updated[0].id : null);
-      }
-
-      return updated;
-    });
-  };
 
   const activeChat = chats.find(c => c.id === activeChatId);
 
@@ -120,14 +118,14 @@ export default function App() {
         activeChatId={activeChatId}
         onNewChat={startNewChat}
         onSelectChat={selectChat}
-        onDeleteChat={deleteChat}
+        onDeleteChat={handleDeleteChat}
       />
 
       <ChatWindow
         key={activeChatId}
         chat={activeChat}
         chatId={activeChatId}
-        onUpdateMessages={(chatId, msgs) => updateMessages(chatId, msgs)}
+        onUpdateMessages={updateMessages}
       />
     </div>
   );
