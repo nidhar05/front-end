@@ -31,7 +31,7 @@ export default function App() {
   useEffect(() => {
     if (!activeChatId) return;
 
-    fetch(`http://localhost:8080/api/chat/sessions/${activeChatId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/chat/sessions/${activeChatId}`)
       .then(res => res.json())
       .then(messages => {
         setChats(prev =>
