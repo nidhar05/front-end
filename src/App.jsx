@@ -9,23 +9,33 @@ export default function App() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
 
-  // Load sessions
+  // =========================
+  // LOAD ALL CHAT SESSIONS
+  // =========================
   useEffect(() => {
     fetch(`${API_BASE}/api/chat/sessions`)
       .then(res => res.json())
       .then(sessionIds => {
-        const mapped = sessionIds.map(id => ({
-          id,
-          title: "Prakruti Assessment",
-          messages: []
-        }));
+        const mapped = sessionIds
+          .map(id => ({
+            id,
+            title: "Prakruti Assessment",
+            messages: []
+          }))
+          // 🔥 ENSURE NEWEST CHAT IS ALWAYS ON TOP
+          .sort((a, b) => Number(b.id) - Number(a.id));
+
         setChats(mapped);
-        if (mapped.length > 0) setActiveChatId(mapped[0].id);
+        if (mapped.length > 0) {
+          setActiveChatId(mapped[0].id);
+        }
       })
       .catch(console.error);
   }, []);
 
-  // Load messages when chat selected
+  // =========================
+  // LOAD MESSAGES FOR ACTIVE CHAT
+  // =========================
   useEffect(() => {
     if (!activeChatId) return;
 
@@ -33,56 +43,66 @@ export default function App() {
       .then(res => res.json())
       .then(messages => {
         setChats(prev =>
-          prev.map(c =>
-            c.id === activeChatId
+          prev.map(chat =>
+            chat.id === activeChatId
               ? {
-                ...c,
-                messages: messages.map(m => ({
-                  role: m.role.toLowerCase(),
-                  text: m.message
-                }))
-              }
-              : c
+                  ...chat,
+                  messages: messages.map(m => ({
+                    role: m.role.toLowerCase(),
+                    text: m.message
+                  }))
+                }
+              : chat
           )
         );
       })
       .catch(console.error);
   }, [activeChatId]);
 
-  // New chat
+  // =========================
+  // CREATE NEW CHAT (TOP)
+  // =========================
   const startNewChat = () => {
     const newChat = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), // timestamp
       title: "New Prakruti Assessment",
       messages: []
     };
+
+    // 🔥 ALWAYS ADD NEW CHAT AT TOP
     setChats(prev => [newChat, ...prev]);
     setActiveChatId(newChat.id);
   };
 
-  // Update messages
+  // =========================
+  // UPDATE MESSAGES
+  // =========================
   const updateMessages = (chatId, messages) => {
     setChats(prev =>
-      prev.map(c =>
-        c.id === chatId
+      prev.map(chat =>
+        chat.id === chatId
           ? {
-            ...c,
-            messages,
-            title:
-              messages.find(m => m.role === "user")?.text?.slice(0, 25) ||
-              "Prakruti Assessment"
-          }
-          : c
+              ...chat,
+              messages,
+              title:
+                messages.find(m => m.role === "user")?.text?.slice(0, 25) ||
+                "Prakruti Assessment"
+            }
+          : chat
       )
     );
   };
 
-  // Select chat
+  // =========================
+  // SELECT CHAT
+  // =========================
   const selectChat = (chatId) => {
     setActiveChatId(chatId);
   };
 
-  // 🗑️ DELETE CHAT (FIXED)
+  // =========================
+  // DELETE CHAT (PERMANENT)
+  // =========================
   const handleDeleteChat = async (sessionId) => {
     try {
       const res = await fetch(
@@ -90,26 +110,19 @@ export default function App() {
         { method: "DELETE" }
       );
 
-      if (!res.ok) {
-        throw new Error("Delete failed");
-      }
+      if (!res.ok) throw new Error("Delete failed");
 
-      // ✅ update UI ONLY after backend delete
-      setChats(prev => prev.filter(c => c.id !== sessionId));
+      setChats(prev => prev.filter(chat => chat.id !== sessionId));
 
       if (activeChatId === sessionId) {
         setActiveChatId(null);
       }
-
     } catch (err) {
       console.error("Failed to delete chat", err);
-      alert("Delete failed on server");
     }
   };
 
-
-
-  const activeChat = chats.find(c => c.id === activeChatId);
+  const activeChat = chats.find(chat => chat.id === activeChatId);
 
   return (
     <div className="app-container">
