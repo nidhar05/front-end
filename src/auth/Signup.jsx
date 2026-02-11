@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { setToken, isLoggedIn } from "./AuthUtils";
 import "./Auth.css";
 
 const API_BASE = "http://localhost:8080";
@@ -9,6 +10,12 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate("/", { replace: true });
+    }
+  }, []);
 
   const signup = async () => {
     setError("");
@@ -20,11 +27,22 @@ export default function Signup() {
     });
 
     if (!res.ok) {
-      setError("Account already exists");
+      const message = await res.text();
+      setError(message || "Signup failed");
       return;
     }
 
-    navigate("/login");
+
+    const token = await res.text();
+
+    if (!token) {
+      setError("Signup succeeded but no token received.");
+      return;
+    }
+
+    setToken(token);
+
+    navigate("/", { replace: true });
   };
 
   return (

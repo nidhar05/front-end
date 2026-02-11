@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { setToken } from "./AuthUtils";
+import { setToken, isLoggedIn } from "./AuthUtils";
 import "./Auth.css";
 
 const API_BASE = "http://localhost:8080";
@@ -10,6 +10,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // Auto redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate("/", { replace: true });
+    }
+  }, []);
 
   const login = async () => {
     setError("");
@@ -26,8 +33,16 @@ export default function Login() {
     }
 
     const token = await res.text();
+
+    if (!token) {
+      setError("Login failed. No token received.");
+      return;
+    }
+
     setToken(token);
-    navigate("/");
+
+    navigate("/", { replace: true });
+
   };
 
   return (

@@ -4,7 +4,7 @@ import Message from "./Message";
 // const BACKEND_URL =
 //   `${import.meta.env.VITE_API_URL}/api/chat` || "http://localhost:8080/api/chat";
 
-const API_BASE = import.meta.env.VITE_API_URL;
+const API_BASE = "http://localhost:8080";
 
 const BACKEND_URL = `${API_BASE}/api/chat`;
 
@@ -36,82 +36,85 @@ export default function ChatWindow({ chat, chatId, onUpdateMessages }) {
     try {
       const res = await fetch(BACKEND_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
         body: JSON.stringify({
-          sessionId: chatId,   // 🔑 THIS IS THE KEY FIX
+          sessionId: chatId,
           message: userMsg.text
         })
-      });
+    });
 
 
-      const data = await res.json();
+    const data = await res.json();
 
-      onUpdateMessages(chatId, [
-        ...updatedMessages,
-        { role: "assistant", text: data.reply }
-      ]);
-    } catch {
-      onUpdateMessages(chatId, [
-        ...updatedMessages,
-        {
-          role: "assistant",
-          text: "⚠️ Unable to process your request. Please try again."
-        }
-      ]);
-    } finally {
-      setLoading(false);
-      inputRef.current?.focus();
-    }
-  };
+    onUpdateMessages(chatId, [
+      ...updatedMessages,
+      { role: "assistant", text: data.reply }
+    ]);
+  } catch {
+    onUpdateMessages(chatId, [
+      ...updatedMessages,
+      {
+        role: "assistant",
+        text: "⚠️ Unable to process your request. Please try again."
+      }
+    ]);
+  } finally {
+    setLoading(false);
+    inputRef.current?.focus();
+  }
+};
 
-  return (
-    <div className="chat-container">
-      {/* TOP TITLE BAR */}
-      <header className="chat-header">
-        <h3>Prakruti Assessment Chatbot</h3>
-      </header>
+return (
+  <div className="chat-container">
+    {/* TOP TITLE BAR */}
+    <header className="chat-header">
+      <h3>Prakruti Assessment Chatbot</h3>
+    </header>
 
-      {/* CHAT BODY */}
-      <main className="chat-body">
-        {!chat || chat.messages.length === 0 ? (
-          <div className="empty-state">
-            <h2>Start a new Prakruti assessment</h2>
-            <p>Describe your symptoms to begin.</p>
+    {/* CHAT BODY */}
+    <main className="chat-body">
+      {!chat || chat.messages.length === 0 ? (
+        <div className="empty-state">
+          <h2>Start a new Prakruti assessment</h2>
+          <p>Describe your symptoms to begin.</p>
+        </div>
+      ) : (
+        chat.messages.map((m, i) => (
+          <Message key={i} role={m.role} text={m.text} />
+        ))
+      )}
+
+      {/* PROCESSING INDICATOR */}
+      {loading && (
+        <div className="message-row assistant">
+          <div className="message-bubble processing">
+            <span className="spinner"></span>
+            Processing…
           </div>
-        ) : (
-          chat.messages.map((m, i) => (
-            <Message key={i} role={m.role} text={m.text} />
-          ))
-        )}
+        </div>
+      )}
 
-        {/* PROCESSING INDICATOR */}
-        {loading && (
-          <div className="message-row assistant">
-            <div className="message-bubble processing">
-              <span className="spinner"></span>
-              Processing…
-            </div>
-          </div>
-        )}
+      <div ref={bottomRef} />
+    </main>
 
-        <div ref={bottomRef} />
-      </main>
-
-      {/* INPUT BAR (ALWAYS VISIBLE) */}
-      <footer className="chat-input">
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder={chat ? "Type your message here…" : "Click 'New Chat' to start"}
-          onKeyDown={e => e.key === "Enter" && sendMessage()}
-          disabled={!chat || loading}
-          type="text"
-        />
-        <button onClick={sendMessage} disabled={!chat || loading} title="Send message (or press Enter)">
-          Send
-        </button>
-      </footer>
-    </div>
-  );
+    {/* INPUT BAR (ALWAYS VISIBLE) */}
+    <footer className="chat-input">
+      <input
+        ref={inputRef}
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        placeholder={chat ? "Type your message here…" : "Click 'New Chat' to start"}
+        onKeyDown={e => e.key === "Enter" && sendMessage()}
+        disabled={!chat || loading}
+        type="text"
+      />
+      <button onClick={sendMessage} disabled={!chat || loading} title="Send message (or press Enter)">
+        Send
+      </button>
+    </footer>
+  </div>
+);
 }
