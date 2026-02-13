@@ -345,3 +345,59 @@ html, body {
   margin-bottom: 6px;
 }
 
+/* Chat item container */
+.chat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.chat-item:hover {
+  background-color: #2d2f36;
+}
+
+.chat-item.active {
+  background-color: #3a3d46;
+}
+
+/* Three dots button */
+.chat-actions {
+  position: relative;
+}
+
+.chat-actions button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Dropdown menu */
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 25px;
+  background: #2d2f36;
+  border-radius: 8px;
+  padding: 5px 0;
+  width: 120px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.dropdown div {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: white;
+}
+
+.dropdown div:hover {
+  background-color: #3a3d46;
+}
+
+

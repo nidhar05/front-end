@@ -10,16 +10,9 @@ const API_BASE = "http://localhost:8080";
 export default function AppContent() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  // 🔐 Redirect if no token
-  useEffect(() => {
-    if (!token) {
-      navigate("/login", { replace: true });
-    }
-  }, [token, navigate]);
 
   const authHeaders = {
     Authorization: `Bearer ${token}`,
@@ -27,12 +20,29 @@ export default function AppContent() {
   };
 
   // =============================
+  // INITIAL LOAD (ON REFRESH)
+  // =============================
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedToken) {
+      navigate("/login", { replace: true });
+    } else {
+      setToken(storedToken);
+      loadSessions();
+    }
+  }, []);
+
+  // =============================
   // LOAD SESSIONS
   // =============================
   const loadSessions = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/chat/sessions`, {
-        headers: authHeaders
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
+        }
       });
 
       if (res.status === 401) {
@@ -43,7 +53,11 @@ export default function AppContent() {
 
       const sessions = await res.json();
 
-      const mapped = sessions.map(s => ({
+      const sorted = sessions.sort(
+        (a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated)
+      );
+
+      const mapped = sorted.map(s => ({
         id: s.sessionId,
         title: s.title,
         messages: []
@@ -51,19 +65,17 @@ export default function AppContent() {
 
       setChats(mapped);
 
-      if (!activeChatId && mapped.length > 0) {
-        setActiveChatId(mapped[0].id);
+      if (mapped.length > 0) {
+        setActiveChatId(prev => {
+          const exists = mapped.find(c => c.id === prev);
+          return exists ? prev : mapped[0].id;
+        });
       }
+
     } catch (err) {
       console.error("Failed to load sessions:", err);
     }
   };
-
-  useEffect(() => {
-    if (token) {
-      loadSessions();
-    }
-  }, [token]);
 
   // =============================
   // LOAD MESSAGES
@@ -94,12 +106,12 @@ export default function AppContent() {
           prev.map(chat =>
             chat.id === activeChatId
               ? {
-                ...chat,
-                messages: messages.map(m => ({
-                  role: m.role.toLowerCase(),
-                  text: m.message
-                }))
-              }
+                  ...chat,
+                  messages: messages.map(m => ({
+                    role: m.role.toLowerCase(),
+                    text: m.message
+                  }))
+                }
               : chat
           )
         );
@@ -112,7 +124,6 @@ export default function AppContent() {
     loadMessages();
 
   }, [activeChatId]);
-
 
   // =============================
   // NEW CHAT
@@ -129,7 +140,7 @@ export default function AppContent() {
       const session = await res.json();
 
       const newChat = {
-        id: session.sessionId,   // 🔥 use backend sessionId
+        id: session.sessionId,
         title: session.title,
         messages: []
       };
@@ -141,8 +152,6 @@ export default function AppContent() {
       console.error("Failed to create session:", err);
     }
   };
-
-
 
   // =============================
   // UPDATE MESSAGES
@@ -172,25 +181,31 @@ export default function AppContent() {
   // =============================
   const handleRenameChat = async (chatId) => {
     const newTitle = prompt("Rename chat");
-    if (!newTitle) return;
-
-    setChats(prev =>
-      prev.map(chat =>
-        chat.id === chatId
-          ? { ...chat, title: newTitle }
-          : chat
-      )
-    );
+    if (!newTitle || newTitle.trim() === "") return;
 
     try {
-      await fetch(
+      const res = await fetch(
         `${API_BASE}/api/chat/sessions/${chatId}/rename`,
         {
           method: "PUT",
-          headers: authHeaders,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          },
           body: JSON.stringify({ title: newTitle })
         }
       );
+
+      if (!res.ok) return;
+
+      setChats(prev =>
+        prev.map(chat =>
+          chat.id === chatId
+            ? { ...chat, title: newTitle }
+            : chat
+        )
+      );
+
     } catch (err) {
       console.error("Rename failed:", err);
     }
@@ -201,25 +216,35 @@ export default function AppContent() {
   // =============================
   const handleDeleteChat = async (chatId) => {
     try {
-      await fetch(
+      const res = await fetch(
         `${API_BASE}/api/chat/sessions/${chatId}`,
         {
           method: "DELETE",
-          headers: authHeaders
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
         }
       );
 
-      setChats(prev => prev.filter(chat => chat.id !== chatId));
+      if (!res.ok) return;
 
-      if (activeChatId === chatId) {
-        setActiveChatId(null);
-      }
+      setChats(prev => {
+        const updated = prev.filter(chat => chat.id !== chatId);
+
+        if (chatId === activeChatId) {
+          setActiveChatId(updated.length > 0 ? updated[0].id : null);
+        }
+
+        return updated;
+      });
+
     } catch (err) {
       console.error("Delete failed:", err);
     }
   };
 
-  const activeChat = chats.find(c => c.id === activeChatId);
+  const activeChat =
+    chats.find(c => c.id === activeChatId) || null;
 
   return (
     <div className="app-container">
@@ -232,12 +257,14 @@ export default function AppContent() {
         onRenameChat={handleRenameChat}
       />
 
-      <ChatWindow
-        key={activeChatId}
-        chat={activeChat}
-        chatId={activeChatId}
-        onUpdateMessages={updateMessages}
-      />
+      {activeChatId && activeChat && (
+        <ChatWindow
+          key={activeChatId}
+          chat={activeChat}
+          chatId={activeChatId}
+          onUpdateMessages={updateMessages}
+        />
+      )}
     </div>
   );
 }

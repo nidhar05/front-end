@@ -1,5 +1,6 @@
 import { logout } from "../auth/AuthUtils";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Sidebar({
   chats,
@@ -10,10 +11,11 @@ export default function Sidebar({
   onRenameChat
 }) {
   const navigate = useNavigate();
+  const [openMenu, setOpenMenu] = useState(null);
 
   const handleLogout = () => {
-    logout(); // remove token
-    navigate("/login", { replace: true }); // go to login page
+    logout();
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -31,20 +33,40 @@ export default function Sidebar({
       <div className="sidebar-section">
         {chats.map(chat => (
           <div
-            key={String(chat.id)}
+            key={chat.id}
             className={`chat-item ${chat.id === activeChatId ? "active" : ""}`}
-            onClick={() => {
-              if (chat.id !== activeChatId) {
-                onSelectChat(chat.id);
-              } else {
-                // force reload if same chat clicked
-                onSelectChat(null);
-                setTimeout(() => onSelectChat(chat.id), 0);
-              }
-            }}
-
           >
-            {chat.title}
+            <span onClick={() => onSelectChat(chat.id)}>
+              {chat.title}
+            </span>
+
+            <div className="chat-actions">
+              <button
+                onClick={() =>
+                  setOpenMenu(openMenu === chat.id ? null : chat.id)
+                }
+              >
+                ⋮
+              </button>
+
+              {openMenu === chat.id && (
+                <div className="dropdown">
+                  <div onClick={() => {
+                    onRenameChat(chat.id);
+                    setOpenMenu(null);
+                  }}>
+                    Rename
+                  </div>
+
+                  <div onClick={() => {
+                    onDeleteChat(chat.id);
+                    setOpenMenu(null);
+                  }}>
+                    Delete
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
