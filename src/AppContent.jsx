@@ -106,12 +106,12 @@ export default function AppContent() {
           prev.map(chat =>
             chat.id === activeChatId
               ? {
-                  ...chat,
-                  messages: messages.map(m => ({
-                    role: m.role.toLowerCase(),
-                    text: m.message
-                  }))
-                }
+                ...chat,
+                messages: messages.map(m => ({
+                  role: m.role.toLowerCase(),
+                  text: m.message
+                }))
+              }
               : chat
           )
         );
@@ -161,12 +161,20 @@ export default function AppContent() {
       const updated = prev.find(c => c.id === chatId);
       if (!updated) return prev;
 
+      let newTitle = updated.title;
+
+      // Only auto-generate title if still default
+      if (updated.title === "New Chat") {
+        const firstUserMessage = messages.find(m => m.role === "user");
+        if (firstUserMessage) {
+          newTitle = firstUserMessage.text.slice(0, 25);
+        }
+      }
+
       const updatedChat = {
         ...updated,
         messages,
-        title:
-          messages.find(m => m.role === "user")?.text?.slice(0, 25) ||
-          updated.title
+        title: newTitle
       };
 
       return [
@@ -175,6 +183,7 @@ export default function AppContent() {
       ];
     });
   };
+
 
   // =============================
   // RENAME CHAT
