@@ -14,7 +14,7 @@ export default function Login() {
   // Auto redirect if already logged in
   useEffect(() => {
     if (isLoggedIn()) {
-      navigate("/", { replace: true });
+      navigate("/chat", { replace: true });
     }
   }, []);
 
@@ -41,7 +41,7 @@ export default function Login() {
 
     setToken(token);
 
-    navigate("/", { replace: true });
+    navigate("/chat", { replace: true });
 
   };
 
