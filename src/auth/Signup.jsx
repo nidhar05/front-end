@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { setToken, isLoggedIn } from "./AuthUtils";
 import "./Auth.css";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://ai-prakrutiassessment.onrender.com";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -42,7 +42,7 @@ export default function Signup() {
 
     setToken(token);
 
-    navigate("/", { replace: true });
+    navigate("/chat", { replace: true });
   };
 
   return (

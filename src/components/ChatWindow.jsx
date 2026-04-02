@@ -4,7 +4,7 @@ import Message from "./Message";
 // const BACKEND_URL =
 //   `${import.meta.env.VITE_API_URL}/api/chat` || "http://localhost:8080/api/chat";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://ai-prakrutiassessment.onrender.com";
 
 const BACKEND_URL = `${API_BASE}/api/chat`;
 

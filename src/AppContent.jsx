@@ -5,7 +5,7 @@ import ChatWindow from "./components/ChatWindow";
 import { logout } from "./auth/AuthUtils";
 import "./App.css";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://ai-prakrutiassessment.onrender.com";
 
 export default function AppContent() {
   const [chats, setChats] = useState([]);
