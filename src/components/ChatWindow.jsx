@@ -8,7 +8,7 @@ const API_BASE = "https://ai-prakrutiassessment.onrender.com";
 
 const BACKEND_URL = `${API_BASE}/api/chat`;
 
-export default function ChatWindow({ chat, chatId, onUpdateMessages }) {
+export default function ChatWindow({ chat, chatId, onUpdateMessages, sidebarOpen, setSidebarOpen }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
@@ -77,6 +77,12 @@ export default function ChatWindow({ chat, chatId, onUpdateMessages }) {
     <div className="chat-container">
       {/* TOP TITLE BAR */}
       <header className="chat-header">
+        <button
+          className="menu-btn"
+          onClick={() => setSidebarOpen(true)}
+        >
+          ☰
+        </button>
         <h3>Prakruti Assessment Chatbot</h3>
       </header>
 

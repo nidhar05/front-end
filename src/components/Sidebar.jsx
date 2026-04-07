@@ -8,7 +8,9 @@ export default function Sidebar({
   onNewChat,
   onSelectChat,
   onDeleteChat,
-  onRenameChat
+  onRenameChat, 
+  sidebarOpen, 
+  setSidebarOpen
 }) {
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
@@ -19,7 +21,7 @@ export default function Sidebar({
   };
 
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
       <h2>🧘 Prakruti AI</h2>
 
       <button className="new-chat" onClick={onNewChat}>

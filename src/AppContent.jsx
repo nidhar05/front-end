@@ -11,6 +11,7 @@ export default function AppContent() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -264,6 +265,8 @@ export default function AppContent() {
         onSelectChat={setActiveChatId}
         onDeleteChat={handleDeleteChat}
         onRenameChat={handleRenameChat}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
       />
 
       {activeChatId && activeChat && (
@@ -272,6 +275,8 @@ export default function AppContent() {
           chat={activeChat}
           chatId={activeChatId}
           onUpdateMessages={updateMessages}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
         />
       )}
     </div>

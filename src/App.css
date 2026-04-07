@@ -1,4 +1,3 @@
-/* ========== GLOBAL RESET ========== */
 * {
   box-sizing: border-box;
 }
@@ -266,13 +265,44 @@ html, body {
   opacity: 1;
 }
 
+.menu-btn {
+  display: none;
+  position: absolute;
+  left: 12px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
   .sidebar {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    height: 100%;
+    width: 260px;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    background: #202123;
   }
 
-  .chat-window {
+  .sidebar.open {
+    left: 0;
+  }
+
+  .chat-container {
     width: 100%;
+  }
+
+  .menu-btn {
+    display: block;
+  }
+
+  .chat-header {
+    justify-content: center;
+    position: relative;
   }
 }
 
