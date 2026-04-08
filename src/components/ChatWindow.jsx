@@ -78,11 +78,11 @@ export default function ChatWindow({ chat, chatId, onUpdateMessages, sidebarOpen
       {/* TOP TITLE BAR */}
       <header className="chat-header">
         <button
-          className="menu-btn"
-          onClick={() => setSidebarOpen(true)}
-        >
-          ☰
-        </button>
+    className="menu-btn"
+    onClick={() => setSidebarOpen(true)}
+  >
+    ☰
+  </button>
         <h3>Prakruti Assessment Chatbot</h3>
       </header>
 
